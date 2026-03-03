@@ -15,7 +15,6 @@ dist-ssr
 *.local
 
 # Sensitive config files
-config.enc.json
 
 # Claude Code settings
 .claude/

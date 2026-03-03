@@ -1,4 +1,4 @@
-import { LLMRequestParams, LLMResponse } from '../types';
+import { LLMRequestParams, LLMResponse, SceneConfig } from '../types';
 
 /**
  * API 配置类型
@@ -31,12 +31,17 @@ export class LLMService {
   /**
    * 发送请求到 LLM API
    * @param params 请求参数
+   * @param sceneConfig 场景配置（可选）
    * @returns Promise<LLMResponse>
    */
-  async generatePrompt(params: LLMRequestParams): Promise<LLMResponse> {
+  async generatePrompt(params: LLMRequestParams, sceneConfig?: SceneConfig): Promise<LLMResponse> {
     if (!this.config.apiKey || !this.config.endpoint) {
       throw new Error('API Key 和 Endpoint 未配置，请在设置中填写');
     }
+
+    // 获取场景对应的 Prompt 模板
+    const systemPrompt = sceneConfig?.systemPrompt || '你是一个专业的 AI 助手。';
+    const requirement = sceneConfig?.requirement || '';
 
     // 构建请求体
     let body: any;
@@ -58,15 +63,11 @@ export class LLMService {
         messages: [
           {
             role: 'user',
-            content: `你是一个专业的编程助手。请将以下用户的口语化描述，转化为清晰、结构化、可以直接用于 AI 编程工具（如 Claude、Cursor）的 Prompt。
+            content: `${systemPrompt}
 
 用户描述：${params.prompt}
 
-要求：
-1. 将模糊的描述转化为具体的技术要求
-2. 使用清晰、简洁的语言
-3. 包含必要的上下文信息
-4. 输出格式为纯文本，适合直接复制使用`
+${requirement}`
           }
         ],
         temperature: params.temperature || 0.7,
@@ -79,17 +80,13 @@ export class LLMService {
         messages: [
           {
             role: 'system',
-            content: '你是一个专业的编程助手。请将以下用户的口语化描述，转化为清晰、结构化、可以直接用于 AI 编程工具（如 Claude、Cursor）的 Prompt。'
+            content: systemPrompt
           },
           {
             role: 'user',
             content: `用户描述：${params.prompt}
 
-要求：
-1. 将模糊的描述转化为具体的技术要求
-2. 使用清晰、简洁的语言
-3. 包含必要的上下文信息
-4. 输出格式为纯文本，适合直接复制使用`
+${requirement}`
           }
         ],
         temperature: params.temperature || 0.7,
@@ -155,12 +152,12 @@ export const mockLLMService = {
    * Mock 优化函数
    * 将用户输入包装为固定格式
    */
-  optimizePrompt: (rawText: string): string => {
+  optimizePrompt: (rawText: string, sceneConfig?: SceneConfig): string => {
     if (!rawText || rawText.trim() === '') {
       return '';
     }
 
     // Mock 逻辑：将左侧转录文本包装为固定格式
-    return `根据用户输入：${rawText}，请编写代码。`;
+    return `[${sceneConfig?.name || '默认'}场景] 根据用户输入：${rawText}，请生成相关内容。`;
   },
 };
