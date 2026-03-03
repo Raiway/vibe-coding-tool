@@ -38,3 +38,21 @@ export interface LLMResponse {
     totalTokens: number;
   };
 }
+
+/**
+ * 历史记录项
+ */
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  rawText: string;
+  optimizedText: string;
+}
+
+/**
+ * 用户设置（加密存储）
+ */
+export interface UserSettings {
+  passwordHash: string;  // SHA-256 哈希
+  salt: string;          // 盐值
+}
