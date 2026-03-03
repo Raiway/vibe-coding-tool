@@ -320,7 +320,39 @@ function App() {
 
   // GitHub 同步相关常量
   const GITHUB_SCENES_URL = 'https://api.github.com/repos/Raiway/vibe-coding-tool/contents/config/scenes.json';
+  const GITHUB_API_CONFIG_URL = 'https://api.github.com/repos/Raiway/vibe-coding-tool/contents/config.enc.json';
   const ENCRYPTED_TOKEN = 'JAAVMQQsIxYnHhVRSW8GPCIUMwIHXgFYIF1qdXUjDS8oOV4VIlwBbA==';
+
+  /**
+   * 从云端下载 API 配置（登录时自动同步）
+   */
+  const downloadApiConfigs = useCallback(async () => {
+    const githubToken = decryptData(ENCRYPTED_TOKEN, password);
+    if (!githubToken) return;
+
+    try {
+      const res = await fetch(GITHUB_API_CONFIG_URL, {
+        headers: {
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      });
+
+      if (!res.ok) return; // 静默失败
+
+      const data = await res.json();
+      const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+      const decrypted = decryptData(content.encrypted, password);
+
+      if (decrypted) {
+        const config = JSON.parse(decrypted) as ApiConfigData;
+        setApiConfigData(config);
+        localStorage.setItem('vibe-coding-api-config', JSON.stringify(config));
+      }
+    } catch {
+      // 静默失败，自动同步不阻塞用户操作
+    }
+  }, [password]);
 
   /**
    * 从云端下载场景配置（登录时自动同步）
@@ -352,12 +384,13 @@ function App() {
     }
   }, [password]);
 
-  // 登录成功后自动同步场景配置
+  // 登录成功后自动同步 API 配置和场景配置
   useEffect(() => {
     if (isAuthenticated && password) {
+      downloadApiConfigs();
       downloadSceneConfigs();
     }
-  }, [isAuthenticated, password, downloadSceneConfigs]);
+  }, [isAuthenticated, password, downloadApiConfigs, downloadSceneConfigs]);
 
   /**
    * 上传场景配置到 GitHub
