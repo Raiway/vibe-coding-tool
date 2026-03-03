@@ -363,8 +363,45 @@ function App() {
   };
 
   // GitHub 同步相关常量
-  const GITHUB_SCENES_URL = 'https://api.github.com/repos/Raiway/vibe-coding-tool/contents/scenes.json';
+  const GITHUB_SCENES_URL = 'https://api.github.com/repos/Raiway/vibe-coding-tool/contents/config/scenes.json';
   const ENCRYPTED_TOKEN = 'JAAVMQQsIxYnHhVRSW8GPCIUMwIHXgFYIF1qdXUjDS8oOV4VIlwBbA==';
+
+  /**
+   * 从云端下载场景配置（登录时自动同步）
+   */
+  const downloadSceneConfigs = useCallback(async () => {
+    const githubToken = decryptData(ENCRYPTED_TOKEN, password);
+    if (!githubToken) return;
+
+    try {
+      const res = await fetch(GITHUB_SCENES_URL, {
+        headers: {
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      });
+
+      if (!res.ok) return; // 静默失败
+
+      const data = await res.json();
+      const content = decodeURIComponent(escape(atob(data.content)));
+      const cloudData = JSON.parse(content) as SceneCloudData;
+
+      if (cloudData.scenes && Array.isArray(cloudData.scenes)) {
+        setSceneConfigs(cloudData.scenes);
+        localStorage.setItem('vibe-coding-scene-configs', JSON.stringify(cloudData.scenes));
+      }
+    } catch {
+      // 静默失败，自动同步不阻塞用户操作
+    }
+  }, [password]);
+
+  // 登录成功后自动同步场景配置
+  useEffect(() => {
+    if (isAuthenticated && password) {
+      downloadSceneConfigs();
+    }
+  }, [isAuthenticated, password, downloadSceneConfigs]);
 
   /**
    * 上传场景配置到 GitHub

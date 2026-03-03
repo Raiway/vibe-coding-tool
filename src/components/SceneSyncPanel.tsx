@@ -10,7 +10,7 @@ interface SceneSyncPanelProps {
   onScenesLoaded: (scenes: SceneConfig[]) => void;
 }
 
-const GITHUB_SCENES_URL = 'https://api.github.com/repos/Raiway/vibe-coding-tool/contents/scenes.json';
+const GITHUB_SCENES_URL = 'https://api.github.com/repos/Raiway/vibe-coding-tool/contents/config/scenes.json';
 const ENCRYPTED_TOKEN = 'JAAVMQQsIxYnHhVRSW8GPCIUMwIHXgFYIF1qdXUjDS8oOV4VIlwBbA==';
 
 /**
@@ -212,7 +212,7 @@ export function SceneSyncPanel({ password, sceneConfigs, onScenesLoaded }: Scene
   return (
     <div className="space-y-4">
       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-        场景配置将以明文 JSON 格式存储在 GitHub 仓库的 <code className="px-1.5 py-0.5 rounded text-xs" style={{ background: 'var(--bg-tertiary)' }}>scenes.json</code> 文件中。
+        场景配置将以明文 JSON 格式存储在 GitHub 仓库的 <code className="px-1.5 py-0.5 rounded text-xs" style={{ background: 'var(--bg-tertiary)' }}>config/scenes.json</code> 文件中。
       </p>
 
       {message && (
