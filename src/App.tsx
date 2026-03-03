@@ -13,7 +13,7 @@ import { SceneConfig, SyncTarget, SceneCloudData } from './types';
 type Theme = 'light' | 'dark';
 
 /**
- * 默认场景配置
+ * 默认场景配置（仅保留编程作为基础选项）
  */
 const DEFAULT_SCENE_CONFIGS: SceneConfig[] = [
   {
@@ -24,50 +24,6 @@ const DEFAULT_SCENE_CONFIGS: SceneConfig[] = [
 1. 将模糊的描述转化为具体的技术要求
 2. 使用清晰、简洁的语言
 3. 包含必要的上下文信息
-4. 输出格式为纯文本，适合直接复制使用`,
-    isDefault: true,
-  },
-  {
-    id: 'video',
-    name: '视频',
-    systemPrompt: '你是一个专业的视频制作专家。请将以下用户的口语化描述，转化为清晰、结构化的视频制作指令和 Prompt。',
-    requirement: `要求：
-1. 明确视频风格、时长、分辨率等技术参数
-2. 描述画面内容、镜头运动、转场效果
-3. 包含背景音乐、字幕、特效等元素
-4. 输出格式为纯文本，适合直接复制使用`,
-    isDefault: true,
-  },
-  {
-    id: 'image',
-    name: '图片',
-    systemPrompt: '你是一个专业的 AI 绘画专家。请将以下用户的口语化描述，转化为清晰、详细的图片生成 Prompt。',
-    requirement: `要求：
-1. 详细描述画面主体、背景、构图
-2. 指定艺术风格、色彩调性、光影效果
-3. 包含画质、视角、氛围等关键词
-4. 输出格式为纯文本，适合直接复制使用`,
-    isDefault: true,
-  },
-  {
-    id: 'storyboard',
-    name: '分镜',
-    systemPrompt: '你是一个专业的影视分镜师。请将以下用户的口语化描述，转化为清晰的分镜脚本。',
-    requirement: `要求：
-1. 按镜头编号组织内容
-2. 描述每个镜头的画面内容、景别、运镜方式
-3. 包含时长估算和转场建议
-4. 输出格式为纯文本，适合直接复制使用`,
-    isDefault: true,
-  },
-  {
-    id: 'script',
-    name: '剧本',
-    systemPrompt: '你是一个专业的编剧。请将以下用户的口语化描述，转化为规范的剧本内容。',
-    requirement: `要求：
-1. 使用标准剧本格式（场景、人物、对白、动作）
-2. 明确场景时间、地点、人物
-3. 对白自然流畅，符合人物性格
 4. 输出格式为纯文本，适合直接复制使用`,
     isDefault: true,
   },
