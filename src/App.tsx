@@ -65,6 +65,7 @@ function App() {
   const [optimizeError, setOptimizeError] = useState('');
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [realtimeOptimize, setRealtimeOptimize] = useState(false);
 
   // 检查会话状态
   useEffect(() => {
@@ -340,6 +341,16 @@ function App() {
 
   const displayText = transcript + interimTranscript;
 
+  // 实时优化：当文本变化且开启实时优化时，自动触发优化
+  useEffect(() => {
+    if (realtimeOptimize && displayText.trim()) {
+      const timer = setTimeout(() => {
+        handleOptimize();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [displayText, realtimeOptimize]);
+
   // 未认证时显示密码页面
   if (!isAuthenticated) {
     return <PasswordScreen onAuthenticated={(pwd) => { setPassword(pwd); setIsAuthenticated(true); }} />;
@@ -447,8 +458,9 @@ function App() {
         </div>
       )}
 
-      {/* 主内容区 - 移动端上下布局，桌面端左右布局 */}
-      <div className="flex-1 flex flex-col sm:flex-row min-h-0 theme-transition" style={{ background: 'var(--bg-primary)' }}>
+      {/* 主内容区 - 移动端上下布局，桌面端左右布局，占画面70% */}
+      <div className="flex-1 flex items-center justify-center min-h-0 theme-transition p-2 sm:p-4" style={{ background: 'var(--bg-primary)' }}>
+        <div className="w-full h-[70vh] sm:h-[70vh] flex flex-col sm:flex-row min-h-0 theme-transition rounded-xl overflow-hidden shadow-lg" style={{ borderColor: 'var(--border-color)', border: '1px solid var(--border-color)' }}>
         {/* 左侧/上方：语音转录（可编辑） */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0 theme-transition sm:border-r" style={{ borderColor: 'var(--border-color)' }}>
           {/* 标题栏 */}
@@ -458,6 +470,16 @@ function App() {
               <span className="font-semibold text-sm sm:text-base theme-transition" style={{ color: 'var(--text-primary)' }}>语音转录</span>
             </div>
             <div className="flex items-center gap-2">
+              {/* 录音状态指示 */}
+              {isListening && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium theme-transition animate-pulse" style={{
+                  background: 'var(--error-bg)',
+                  color: 'var(--error)'
+                }}>
+                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--error)' }} />
+                  录音中
+                </div>
+              )}
               <button
                 onClick={toggleListening}
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-medium text-xs sm:text-sm theme-transition"
@@ -522,13 +544,28 @@ function App() {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              {/* 实时优化开关 */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs theme-transition hidden sm:inline" style={{ color: 'var(--text-tertiary)' }}>实时</span>
+                <button
+                  onClick={() => setRealtimeOptimize(!realtimeOptimize)}
+                  className="relative w-9 h-5 rounded-full theme-transition"
+                  style={{ background: realtimeOptimize ? 'var(--accent-primary)' : 'var(--bg-tertiary)' }}
+                  title="开启后自动优化输入内容"
+                >
+                  <span
+                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200"
+                    style={{ left: realtimeOptimize ? '18px' : '2px', transition: 'left 0.2s' }}
+                  />
+                </button>
+              </div>
               <button
                 onClick={handleOptimize}
-                disabled={isOptimizing || !displayText}
+                disabled={isOptimizing || !displayText || realtimeOptimize}
                 className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium theme-transition disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: isOptimizing || !displayText ? 'var(--bg-tertiary)' : 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-                  color: isOptimizing || !displayText ? 'var(--text-tertiary)' : 'var(--text-inverse)'
+                  background: isOptimizing || !displayText || realtimeOptimize ? 'var(--bg-tertiary)' : 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+                  color: isOptimizing || !displayText || realtimeOptimize ? 'var(--text-tertiary)' : 'var(--text-inverse)'
                 }}
               >
                 {isOptimizing ? '处理中...' : '一键优化'}
@@ -574,6 +611,7 @@ function App() {
             )}
           </div>
         </div>
+      </div>
       </div>
 
       {/* 设置模态框 */}
@@ -847,20 +885,6 @@ function App() {
           </div>
         </div>
       )}
-
-      {/* 底部状态栏 */}
-      <div className="h-9 sm:h-10 flex items-center justify-center px-4 sm:px-6 theme-transition" style={{
-        borderTop: '1px solid var(--border-color)',
-        background: 'var(--bg-secondary)'
-      }}>
-        <div className="flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium theme-transition" style={{
-          background: isListening ? 'var(--error-bg)' : 'var(--bg-tertiary)',
-          color: isListening ? 'var(--error)' : 'var(--text-tertiary)'
-        }}>
-          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full theme-transition" style={{ background: isListening ? 'var(--error)' : 'var(--text-tertiary)' }} />
-          {isListening ? '录音中...' : '等待录音'}
-        </div>
-      </div>
     </div>
   );
 }
